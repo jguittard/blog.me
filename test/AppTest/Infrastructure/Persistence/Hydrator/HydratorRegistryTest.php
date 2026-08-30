@@ -10,6 +10,7 @@ use App\Domain\Entity\Tag;
 use App\Domain\Entity\User;
 use App\Domain\ReadModel\PostListItem;
 use App\Domain\ReadModel\PostView;
+use App\Domain\Value\Cuid;
 use App\Domain\Value\Email;
 use App\Domain\Value\PostStatus;
 use App\Infrastructure\Persistence\Hydrator\HydratorRegistry;
@@ -17,8 +18,12 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
+use function preg_match;
+
 final class HydratorRegistryTest extends TestCase
 {
+    private const string CUID = 'clh1abcd2efgh3ijkl4mnop5';
+
     private HydratorRegistry $registry;
 
     protected function setUp(): void
@@ -33,13 +38,14 @@ final class HydratorRegistryTest extends TestCase
             'Jane Doe',
             'hash',
             new DateTimeImmutable('2026-01-02 03:04:05'),
-        )->withId(9);
+        );
 
         $row = $this->registry->user()->extract($user);
 
+        self::assertSame(1, preg_match('/^[a-z0-9]{24}$/', (string) $row['id']));
+        unset($row['id']);
         self::assertSame(
             [
-                'id'            => 9,
                 'email'         => 'jane@example.com',
                 'display_name'  => 'Jane Doe',
                 'password_hash' => 'hash',
@@ -48,19 +54,19 @@ final class HydratorRegistryTest extends TestCase
             $row,
         );
 
-        $back = $this->registry->user()->hydrate($row, $this->proto(User::class));
+        $back = $this->registry->user()->hydrate($this->registry->user()->extract($user), $this->proto(User::class));
 
         self::assertEquals($user, $back);
     }
 
     public function testCategoryAndTagRoundTrip(): void
     {
-        $category = Category::create('PHP Internals', 'Deep dives')->withId(3);
+        $category = Category::create('PHP Internals', 'Deep dives');
         $catRow   = $this->registry->category()->extract($category);
         self::assertSame('php-internals', $catRow['slug']);
         self::assertEquals($category, $this->registry->category()->hydrate($catRow, $this->proto(Category::class)));
 
-        $tag    = Tag::named('PHP 8.5')->withId(4);
+        $tag    = Tag::named('PHP 8.5');
         $tagRow = $this->registry->tag()->extract($tag);
         self::assertSame('php-8-5', $tagRow['slug']);
         self::assertEquals($tag, $this->registry->tag()->hydrate($tagRow, $this->proto(Tag::class)));
@@ -68,12 +74,18 @@ final class HydratorRegistryTest extends TestCase
 
     public function testPostRoundTripWithEnumAndNullableDate(): void
     {
-        $post = Post::draft(1, 'Hello World', 'Body copy here', 7, 'Teaser', new DateTimeImmutable('2026-01-01'))
-            ->publish(new DateTimeImmutable('2026-02-01 09:00:00'))
-            ->withId(11);
+        $post = Post::draft(
+            authorId: Cuid::generate(),
+            title: 'Hello World',
+            body: 'Body copy here',
+            categoryId: Cuid::generate(),
+            excerpt: 'Teaser',
+            now: new DateTimeImmutable('2026-01-01'),
+        )->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
 
         $row = $this->registry->post()->extract($post);
 
+        self::assertSame($post->id, $row['id']);
         self::assertSame('published', $row['status']);
         self::assertSame('2026-02-01 09:00:00', $row['published_at']);
         self::assertSame('hello-world', $row['slug']);
@@ -91,7 +103,7 @@ final class HydratorRegistryTest extends TestCase
 
     public function testPostDraftHasNullPublishedAt(): void
     {
-        $post = Post::draft(1, 'Draft One', 'x', null, null, new DateTimeImmutable('2026-01-01 00:00:00'));
+        $post = Post::draft(Cuid::generate(), 'Draft One', 'x', now: new DateTimeImmutable('2026-01-01 00:00:00'));
         $row  = $this->registry->post()->extract($post);
 
         self::assertNull($row['published_at']);
@@ -104,7 +116,7 @@ final class HydratorRegistryTest extends TestCase
     public function testPostListItemHydratesFromJoinRow(): void
     {
         $row = [
-            'id'            => 5,
+            'id'            => self::CUID,
             'slug'          => 'hello-world',
             'title'         => 'Hello World',
             'excerpt'       => null,
@@ -119,6 +131,7 @@ final class HydratorRegistryTest extends TestCase
         $item = $this->registry->postListItem()->hydrate($row, $this->proto(PostListItem::class));
 
         self::assertInstanceOf(PostListItem::class, $item);
+        self::assertSame(self::CUID, $item->id);
         self::assertSame(['php', '8.5', 'hydrator'], $item->tags);
         self::assertSame(PostStatus::Published, $item->status);
         self::assertSame('/posts/hello-world', $item->href);
@@ -128,7 +141,7 @@ final class HydratorRegistryTest extends TestCase
     public function testPostViewHandlesEmptyTagList(): void
     {
         $row = [
-            'id'            => 5,
+            'id'            => self::CUID,
             'slug'          => 'lonely',
             'title'         => 'Lonely Post',
             'excerpt'       => null,

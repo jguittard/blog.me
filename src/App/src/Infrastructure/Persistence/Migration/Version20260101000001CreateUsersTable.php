@@ -6,7 +6,6 @@ namespace App\Infrastructure\Persistence\Migration;
 
 use PhpDb\Adapter\AdapterInterface;
 use PhpDb\Sql\Ddl\Column\Datetime;
-use PhpDb\Sql\Ddl\Column\Integer;
 use PhpDb\Sql\Ddl\Column\Varchar;
 use PhpDb\Sql\Ddl\Constraint\PrimaryKey;
 use PhpDb\Sql\Ddl\Constraint\UniqueKey;
@@ -24,10 +23,7 @@ final class Version20260101000001CreateUsersTable extends AbstractMigration
     {
         $table = new CreateTable('users');
 
-        $id = new Integer('id');
-        $id->setOption('autoincrement', true);
-
-        $table->addColumn($id);
+        $table->addColumn($this->idColumn('id'));
         $table->addColumn(new Varchar('email', 255));
         $table->addColumn(new Varchar('display_name', 100));
         $table->addColumn(new Varchar('password_hash', 255));

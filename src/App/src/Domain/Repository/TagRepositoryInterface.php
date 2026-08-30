@@ -9,7 +9,7 @@ use App\Domain\Value\Slug;
 
 interface TagRepositoryInterface
 {
-    public function find(int $id): ?Tag;
+    public function find(string $id): ?Tag;
 
     public function findBySlug(Slug $slug): ?Tag;
 
@@ -22,9 +22,9 @@ interface TagRepositoryInterface
     public function findOrCreateByNames(array $names): array;
 
     /** @return list<Tag> */
-    public function forPost(int $postId): array;
+    public function forPost(string $postId): array;
 
     public function save(Tag $tag): Tag;
 
-    public function delete(int $id): void;
+    public function delete(string $id): void;
 }

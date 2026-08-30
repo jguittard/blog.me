@@ -100,12 +100,12 @@ final class BlogPersistenceTest extends TestCase
             'Jane Doe',
             password_hash('secret', PASSWORD_BCRYPT),
         ));
-        self::assertNotNull($author->id);
+        self::assertMatchesRegularExpression('/^[a-z0-9]{24}$/', $author->id);
         self::assertEquals($author, $users->findByEmail(Email::fromString('jane@example.com')));
 
         $category = $cats->save(Category::create('PHP Internals', 'Deep dives'));
         $tagList  = $tags->findOrCreateByNames(['php', '8.5', 'hydrator']);
-        $tagIds   = array_map(static fn (Tag $t): int => (int) $t->id, $tagList);
+        $tagIds   = array_map(static fn (Tag $t): string => $t->id, $tagList);
 
         // re-resolving the same names must not create duplicates
         self::assertCount(3, $tags->findOrCreateByNames(['php', '8.5', 'hydrator']));
@@ -114,12 +114,12 @@ final class BlogPersistenceTest extends TestCase
             $author->id,
             'Property Hooks in PHP 8.5',
             str_repeat('word ', 450),
-            (int) $category->id,
+            $category->id,
             'A short look at hooks.',
         )->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
 
         $post = $posts->save($post, $tagIds);
-        self::assertNotNull($post->id);
+        self::assertMatchesRegularExpression('/^[a-z0-9]{24}$/', $post->id);
 
         $reloaded = $posts->findBySlug(Slug::fromString('property-hooks-in-php-8-5'));
         self::assertNotNull($reloaded);
@@ -153,7 +153,7 @@ final class BlogPersistenceTest extends TestCase
         $author = $users->save(User::register(Email::fromString('a@b.com'), 'A', 'h'));
 
         $post = $posts->save(
-            Post::draft((int) $author->id, 'Temporarily Live', 'body')->publish(new DateTimeImmutable('2026-01-01')),
+            Post::draft($author->id, 'Temporarily Live', 'body')->publish(new DateTimeImmutable('2026-01-01')),
         );
         self::assertCount(1, $read->listPublished());
 
@@ -170,15 +170,15 @@ final class BlogPersistenceTest extends TestCase
         $author  = $users->save(User::register(Email::fromString('c@d.com'), 'C', 'h'));
         $tagList = $tags->findOrCreateByNames(['news']);
         $post    = $posts->save(
-            Post::draft((int) $author->id, 'With Tags', 'body'),
-            [(int) $tagList[0]->id],
+            Post::draft($author->id, 'With Tags', 'body'),
+            [$tagList[0]->id],
         );
 
-        self::assertCount(1, $tags->forPost((int) $post->id));
+        self::assertCount(1, $tags->forPost($post->id));
 
-        $posts->delete((int) $post->id);
+        $posts->delete($post->id);
 
-        self::assertNull($posts->find((int) $post->id));
-        self::assertCount(0, $tags->forPost((int) $post->id));
+        self::assertNull($posts->find($post->id));
+        self::assertCount(0, $tags->forPost($post->id));
     }
 }

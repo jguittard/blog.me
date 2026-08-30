@@ -6,7 +6,6 @@ namespace App\Infrastructure\Persistence\Migration;
 
 use PhpDb\Adapter\AdapterInterface;
 use PhpDb\Sql\Ddl\Column\Datetime;
-use PhpDb\Sql\Ddl\Column\Integer;
 use PhpDb\Sql\Ddl\Column\Text;
 use PhpDb\Sql\Ddl\Column\Varchar;
 use PhpDb\Sql\Ddl\Constraint\ForeignKey;
@@ -26,12 +25,9 @@ final class Version20260101000004CreatePostsTable extends AbstractMigration
     {
         $table = new CreateTable('posts');
 
-        $id = new Integer('id');
-        $id->setOption('autoincrement', true);
-
-        $table->addColumn($id);
-        $table->addColumn(new Integer('author_id'));
-        $table->addColumn(new Integer('category_id', true));
+        $table->addColumn($this->idColumn('id'));
+        $table->addColumn($this->idColumn('author_id'));
+        $table->addColumn($this->idColumn('category_id', true));
         $table->addColumn(new Varchar('slug', 200));
         $table->addColumn(new Varchar('title', 200));
         $table->addColumn(new Varchar('excerpt', 500, true));

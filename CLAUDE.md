@@ -120,11 +120,13 @@ Domain / Infrastructure split inside the `App` module:
 - **`Domain/Entity/`** — `final readonly` entities (`User`, `Post`, `Category`,
   `Tag`). Immutable: mutations return a new instance via PHP 8.5
   `clone($this, [...])`; derived values are methods (`Post::isPublished()`,
-  `readingTimeMinutes()`). `?int $id` is null until persisted (`withId()`).
-  Timestamps are truncated to seconds (`->setMicrosecond(0)`) to round-trip
-  through MySQL `DATETIME`.
-- **`Domain/Value/`** — `PostStatus` backed enum; `Slug` / `Email` `final
-  readonly` value objects with validating `fromString()` factories.
+  `readingTimeMinutes()`). Every `$id` is a **CUID2** `string`, generated in the
+  factory (`Post::draft()`, `User::register()`, …), so it is set from creation —
+  there is no auto-increment and no `withId()`. Timestamps are truncated to
+  seconds (`->setMicrosecond(0)`) to round-trip through MySQL `DATETIME`.
+- **`Domain/Value/`** — `Cuid::generate()` (CUID2, 24 chars, `CHAR(24)` columns);
+  `PostStatus` backed enum; `Slug` / `Email` `final readonly` value objects with
+  validating `fromString()` factories.
 - **`Domain/ReadModel/`** — `PostListItem` / `PostView`: flat, hydrate-only DTOs
   for JOIN queries. Not `readonly` (PHP forbids hooks on readonly) — immutability
   via `public private(set)`; derived fields (`href`, `isNew`, `summary`,
@@ -140,8 +142,10 @@ Domain / Infrastructure split inside the `App` module:
 - **`Infrastructure/Persistence/PhpDb/`** — repository implementations, bound to
   their interfaces in `PersistenceConfigProvider` (registered in
   `config/config.php`). Entity CRUD via `PhpDb\TableGateway`; read models via
-  hand-built `PhpDb\Sql\Select` + `HydratingResultSet`. `save()` wraps
-  insert/update + `post_tag` sync in a transaction.
+  hand-built `PhpDb\Sql\Select` + `HydratingResultSet`. `save()` is an upsert
+  (`HydratesRowsTrait::upsert()` probes for the row by CUID, then INSERT or
+  UPDATE — no auto-increment to read back); `PhpDbPostRepository::save()` wraps
+  it plus `post_tag` sync in a transaction.
 - **`Infrastructure/Persistence/Migration/`** — `MigrationRunner` +
   `Version*` classes built with `PhpDb\Sql\Ddl`. Run via `php bin/migrate.php
   [migrate|rollback [n]|status]` or `make db-migrate` / `db-rollback` /

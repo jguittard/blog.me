@@ -20,10 +20,10 @@ use function strip_tags;
  */
 final class PostView
 {
-    private const WORDS_PER_MINUTE = 200;
+    private const int WORDS_PER_MINUTE = 200;
 
     public function __construct(
-        public private(set) int $id,
+        public private(set) string $id,
         public private(set) string $slug,
         public private(set) string $title,
         public private(set) ?string $excerpt,

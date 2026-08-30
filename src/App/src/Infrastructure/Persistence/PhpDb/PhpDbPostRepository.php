@@ -46,7 +46,7 @@ final class PhpDbPostRepository implements PostRepositoryInterface
         );
     }
 
-    public function find(int $id): ?Post
+    public function find(string $id): ?Post
     {
         $row = $this->firstOf($this->table->select(['id' => $id]));
 
@@ -60,25 +60,15 @@ final class PhpDbPostRepository implements PostRepositoryInterface
         return $row instanceof Post ? $row : null;
     }
 
-    /** @param list<int> $tagIds */
+    /** @param list<string> $tagIds */
     public function save(Post $post, array $tagIds = []): Post
     {
         $connection = $this->db->getDriver()->getConnection();
         $connection->beginTransaction();
 
         try {
-            /** @var array<string, mixed> $data */
-            $data = $this->hydrator->extract($post);
-            unset($data['id']);
-
-            if ($post->id === null) {
-                $this->table->insert($data);
-                $post = $post->withId((int) $connection->getLastGeneratedValue());
-            } else {
-                $this->table->update($data, ['id' => $post->id]);
-            }
-
-            $this->syncTags((int) $post->id, $tagIds);
+            $this->upsert($this->table, $this->hydrator, $post->id, $post);
+            $this->syncTags($post->id, $tagIds);
 
             $connection->commit();
         } catch (Throwable $e) {
@@ -90,13 +80,13 @@ final class PhpDbPostRepository implements PostRepositoryInterface
         return $post;
     }
 
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
         $this->table->delete(['id' => $id]);
     }
 
-    /** @param list<int> $tagIds */
-    private function syncTags(int $postId, array $tagIds): void
+    /** @param list<string> $tagIds */
+    private function syncTags(string $postId, array $tagIds): void
     {
         $delete = $this->db->prepareQuery('DELETE FROM `post_tag` WHERE `post_id` = ?', [$postId]);
         $this->db->executeQuery($delete);

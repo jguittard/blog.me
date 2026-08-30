@@ -20,7 +20,7 @@ use function usort;
  */
 final class MigrationRunner
 {
-    private const REGISTRY = 'schema_migrations';
+    private const string REGISTRY = 'schema_migrations';
 
     /** @var list<MigrationInterface> ordered ascending by version */
     private readonly array $migrations;

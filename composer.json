@@ -59,7 +59,8 @@
         "mezzio/mezzio-helpers": "^5.20",
         "mezzio/mezzio-laminasviewrenderer": "^2.15",
         "php-db/phpdb": "0.6.x-dev@dev",
-        "php-db/phpdb-mysql": "^0.4@dev"
+        "php-db/phpdb-mysql": "^0.4@dev",
+        "visus/cuid2": "^6.0"
     },
     "require-dev": {
         "filp/whoops": "^2.15.4",

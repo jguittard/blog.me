@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Migration;
 
 use PhpDb\Adapter\AdapterInterface;
-use PhpDb\Sql\Ddl\Column\Integer;
 use PhpDb\Sql\Ddl\Constraint\ForeignKey;
 use PhpDb\Sql\Ddl\Constraint\PrimaryKey;
 use PhpDb\Sql\Ddl\CreateTable;
@@ -22,8 +21,8 @@ final class Version20260101000005CreatePostTagTable extends AbstractMigration
     {
         $table = new CreateTable('post_tag');
 
-        $table->addColumn(new Integer('post_id'));
-        $table->addColumn(new Integer('tag_id'));
+        $table->addColumn($this->idColumn('post_id'));
+        $table->addColumn($this->idColumn('tag_id'));
 
         $table->addConstraint(new PrimaryKey(['post_id', 'tag_id']));
         $table->addConstraint(

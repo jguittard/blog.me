@@ -26,7 +26,7 @@ final class PhpDbCategoryRepository implements CategoryRepositoryInterface
     private readonly TableGateway $table;
 
     public function __construct(
-        private readonly AdapterInterface $db,
+        AdapterInterface $db,
         HydratorRegistry $hydrators,
     ) {
         $this->hydrator = $hydrators->category();
@@ -39,7 +39,7 @@ final class PhpDbCategoryRepository implements CategoryRepositoryInterface
         );
     }
 
-    public function find(int $id): ?Category
+    public function find(string $id): ?Category
     {
         $row = $this->firstOf($this->table->select(['id' => $id]));
 
@@ -69,22 +69,12 @@ final class PhpDbCategoryRepository implements CategoryRepositoryInterface
 
     public function save(Category $category): Category
     {
-        /** @var array<string, mixed> $data */
-        $data = $this->hydrator->extract($category);
-        unset($data['id']);
-
-        if ($category->id === null) {
-            $this->table->insert($data);
-
-            return $category->withId((int) $this->db->getDriver()->getConnection()->getLastGeneratedValue());
-        }
-
-        $this->table->update($data, ['id' => $category->id]);
+        $this->upsert($this->table, $this->hydrator, $category->id, $category);
 
         return $category;
     }
 
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
         $this->table->delete(['id' => $id]);
     }

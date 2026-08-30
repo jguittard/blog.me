@@ -26,7 +26,7 @@ final class PhpDbUserRepository implements UserRepositoryInterface
     private readonly TableGateway $table;
 
     public function __construct(
-        private readonly AdapterInterface $db,
+        AdapterInterface $db,
         HydratorRegistry $hydrators,
     ) {
         $this->hydrator = $hydrators->user();
@@ -39,7 +39,7 @@ final class PhpDbUserRepository implements UserRepositoryInterface
         );
     }
 
-    public function find(int $id): ?User
+    public function find(string $id): ?User
     {
         $row = $this->firstOf($this->table->select(['id' => $id]));
 
@@ -55,22 +55,12 @@ final class PhpDbUserRepository implements UserRepositoryInterface
 
     public function save(User $user): User
     {
-        /** @var array<string, mixed> $data */
-        $data = $this->hydrator->extract($user);
-        unset($data['id']);
-
-        if ($user->id === null) {
-            $this->table->insert($data);
-
-            return $user->withId((int) $this->db->getDriver()->getConnection()->getLastGeneratedValue());
-        }
-
-        $this->table->update($data, ['id' => $user->id]);
+        $this->upsert($this->table, $this->hydrator, $user->id, $user);
 
         return $user;
     }
 
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
         $this->table->delete(['id' => $id]);
     }

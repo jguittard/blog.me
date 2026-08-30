@@ -24,7 +24,7 @@ use function rtrim;
 final class PostListItem
 {
     public function __construct(
-        public private(set) int $id,
+        public private(set) string $id,
         public private(set) string $slug,
         public private(set) string $title,
         public private(set) ?string $excerpt,
