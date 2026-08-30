@@ -4,7 +4,7 @@ PHP := $(DC) exec -u www-data php
 
 .DEFAULT_GOAL := help
 .PHONY: help certs build up down destroy logs ps install sh test test-integration \
-        db-migrate db-rollback db-status hosts
+        db-migrate db-rollback db-status seed seed-fresh hosts
 
 help: ## List available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -52,6 +52,12 @@ db-rollback: ## Revert the last migration (make db-rollback n=3 for more)
 
 db-status: ## Show migration status
 	$(PHP) php bin/migrate.php status
+
+seed: ## Populate the blog with sample data (idempotent)
+	$(PHP) php bin/seed.php
+
+seed-fresh: ## Wipe the blog tables and reseed
+	$(PHP) php bin/seed.php --fresh
 
 hosts: ## Print the /etc/hosts entries you need
 	@echo "127.0.0.1 blog.me www.blog.me mail.blog.me s3.blog.me minio.blog.me"
