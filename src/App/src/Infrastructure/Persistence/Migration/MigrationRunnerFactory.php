@@ -22,6 +22,7 @@ final class MigrationRunnerFactory
         Version20260101000003CreateTagsTable::class,
         Version20260101000004CreatePostsTable::class,
         Version20260101000005CreatePostTagTable::class,
+        Version20260201000001AddPostImageColumns::class,
     ];
 
     public function __invoke(ContainerInterface $container): MigrationRunner

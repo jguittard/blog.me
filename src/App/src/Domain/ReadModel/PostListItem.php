@@ -34,6 +34,8 @@ final class PostListItem
         public private(set) string $authorName,
         public private(set) ?string $categoryName,
         public private(set) ?string $categorySlug,
+        public private(set) ?string $imageUrl,
+        public private(set) ?string $imageAlt,
         /** @var list<string> */
         public private(set) array $tags,
     ) {

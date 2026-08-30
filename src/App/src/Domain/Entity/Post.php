@@ -34,6 +34,8 @@ final readonly class Post
         public ?DateTimeImmutable $publishedAt,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public ?string $imageUrl = null,
+        public ?string $imageAlt = null,
     ) {
     }
 
@@ -77,6 +79,11 @@ final readonly class Post
     public function reclassify(?string $categoryId): self
     {
         return $this->with(['categoryId' => $categoryId]);
+    }
+
+    public function withImage(?string $url, ?string $alt = null): self
+    {
+        return $this->with(['imageUrl' => $url, 'imageAlt' => $alt]);
     }
 
     public function publish(?DateTimeImmutable $at = null): self

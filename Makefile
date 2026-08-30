@@ -4,7 +4,7 @@ PHP := $(DC) exec -u www-data php
 
 .DEFAULT_GOAL := help
 .PHONY: help certs build up down destroy logs ps install sh test test-integration \
-        db-migrate db-rollback db-status seed seed-fresh hosts
+        db-migrate db-rollback db-status covers seed seed-fresh hosts
 
 help: ## List available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -53,7 +53,14 @@ db-rollback: ## Revert the last migration (make db-rollback n=3 for more)
 db-status: ## Show migration status
 	$(PHP) php bin/migrate.php status
 
-seed: ## Populate the blog with sample data (idempotent)
+covers: ## Generate post cover SVGs and upload them to MinIO
+	$(PHP) php bin/covers.php
+	docker run --rm --network blog-me_default -v "$(PWD)/data/covers:/covers:ro" \
+		--entrypoint /bin/sh minio/mc:latest -c \
+		'mc alias set local http://minio:9000 minio minio12345 >/dev/null && \
+		 mc cp --recursive /covers/ local/uploads/covers/'
+
+seed: ## Populate the blog with sample data (idempotent; run `make covers` too)
 	$(PHP) php bin/seed.php
 
 seed-fresh: ## Wipe the blog tables and reseed

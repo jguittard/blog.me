@@ -28,6 +28,8 @@ final class PostListItemTest extends TestCase
             authorName: 'Jane Doe',
             categoryName: 'PHP',
             categorySlug: 'php',
+            imageUrl: null,
+            imageAlt: null,
             tags: ['php', '8.5'],
         );
     }

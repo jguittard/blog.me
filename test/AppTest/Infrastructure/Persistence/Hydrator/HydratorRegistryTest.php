@@ -81,7 +81,8 @@ final class HydratorRegistryTest extends TestCase
             categoryId: Cuid::generate(),
             excerpt: 'Teaser',
             now: new DateTimeImmutable('2026-01-01'),
-        )->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
+        )->withImage('https://cdn.example/cover.svg', 'Cover')
+            ->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
 
         $row = $this->registry->post()->extract($post);
 
@@ -89,6 +90,8 @@ final class HydratorRegistryTest extends TestCase
         self::assertSame('published', $row['status']);
         self::assertSame('2026-02-01 09:00:00', $row['published_at']);
         self::assertSame('hello-world', $row['slug']);
+        self::assertSame('https://cdn.example/cover.svg', $row['image_url']);
+        self::assertSame('Cover', $row['image_alt']);
 
         $back = $this->registry->post()->hydrate($row, $this->proto(Post::class));
         self::assertInstanceOf(Post::class, $back);
@@ -126,6 +129,8 @@ final class HydratorRegistryTest extends TestCase
             'author_name'   => 'Jane Doe',
             'category_name' => 'PHP',
             'category_slug' => 'php',
+            'image_url'     => 'https://cdn.example/cover.svg',
+            'image_alt'     => 'Cover',
             'tags'          => 'php,8.5,hydrator',
         ];
 
@@ -134,6 +139,8 @@ final class HydratorRegistryTest extends TestCase
         self::assertInstanceOf(PostListItem::class, $item);
         self::assertSame(self::CUID, $item->id);
         self::assertSame('php', $item->categorySlug);
+        self::assertSame('https://cdn.example/cover.svg', $item->imageUrl);
+        self::assertSame('Cover', $item->imageAlt);
         self::assertSame(['php', '8.5', 'hydrator'], $item->tags);
         self::assertSame(PostStatus::Published, $item->status);
         self::assertSame('/posts/hello-world', $item->href);
@@ -155,6 +162,8 @@ final class HydratorRegistryTest extends TestCase
             'author_email'  => 'jane@example.com',
             'category_name' => null,
             'category_slug' => null,
+            'image_url'     => null,
+            'image_alt'     => null,
             'tags'          => null,
         ];
 
@@ -163,6 +172,7 @@ final class HydratorRegistryTest extends TestCase
         self::assertInstanceOf(PostView::class, $view);
         self::assertSame([], $view->tags);
         self::assertNull($view->categoryName);
+        self::assertNull($view->imageUrl);
         self::assertFalse($view->isPublished);
     }
 
