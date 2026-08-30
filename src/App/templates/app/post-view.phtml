@@ -1,0 +1,49 @@
+<?php
+/** @var \App\Domain\ReadModel\PostView $post */
+$this->headTitle($post->title);
+$description = $post->excerpt ?? mb_substr(strip_tags($post->body), 0, 160);
+$this->headMeta()->appendName('description', $description);
+$paragraphs = preg_split('/\n\s*\n/', trim($post->body)) ?: [$post->body];
+?>
+<article class="space-y-6">
+    <nav class="flex flex-wrap items-center gap-1 text-xs text-gray-400">
+        <a href="<?= $this->url('blog.list') ?>" class="transition-colors hover:text-gray-600">Posts</a>
+        <?php if ($post->categoryName !== null && $post->categorySlug !== null): ?>
+            <span>/</span>
+            <a
+                href="<?= $this->url('blog.category', ['slug' => $post->categorySlug]) ?>"
+                class="transition-colors hover:text-gray-600"
+            ><?= $this->escapeHtml($post->categoryName) ?></a>
+        <?php endif; ?>
+    </nav>
+
+    <header class="space-y-3">
+        <h1 class="text-3xl font-bold leading-tight tracking-tight"><?= $this->escapeHtml($post->title) ?></h1>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+            <span>By <?= $this->escapeHtml($post->authorName) ?></span>
+            <?php if ($post->publishedAt !== null): ?>
+                <span class="text-gray-300">&middot;</span>
+                <time datetime="<?= $post->publishedAt->format('c') ?>"><?= $post->publishedAt->format('F j, Y') ?></time>
+            <?php endif; ?>
+            <span class="text-gray-300">&middot;</span>
+            <span><?= $post->readingTimeMinutes ?> min read</span>
+        </div>
+        <?php if ($post->tags !== []): ?>
+            <div class="flex flex-wrap gap-2 pt-1">
+                <?php foreach ($post->tags as $tag): ?>
+                    <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600"><?= $this->escapeHtml($tag) ?></span>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </header>
+
+    <div class="space-y-5 text-[15px] leading-7 text-gray-700">
+        <?php foreach ($paragraphs as $paragraph): ?>
+            <p><?= nl2br($this->escapeHtml(trim((string) $paragraph))) ?></p>
+        <?php endforeach; ?>
+    </div>
+
+    <footer class="border-t border-gray-200 pt-6 text-sm">
+        <a href="<?= $this->url('blog.list') ?>" class="font-medium text-primary hover:underline">&larr; All posts</a>
+    </footer>
+</article>

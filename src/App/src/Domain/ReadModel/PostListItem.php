@@ -33,6 +33,7 @@ final class PostListItem
         public private(set) ?DateTimeImmutable $publishedAt,
         public private(set) string $authorName,
         public private(set) ?string $categoryName,
+        public private(set) ?string $categorySlug,
         /** @var list<string> */
         public private(set) array $tags,
     ) {

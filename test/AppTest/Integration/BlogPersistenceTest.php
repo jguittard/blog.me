@@ -131,6 +131,7 @@ final class BlogPersistenceTest extends TestCase
         self::assertCount(1, $list);
         self::assertSame('Jane Doe', $list[0]->authorName);
         self::assertSame('PHP Internals', $list[0]->categoryName);
+        self::assertSame('php-internals', $list[0]->categorySlug);
         self::assertSame(['8.5', 'hydrator', 'php'], $list[0]->tags);
         self::assertSame('/posts/property-hooks-in-php-8-5', $list[0]->href);
 

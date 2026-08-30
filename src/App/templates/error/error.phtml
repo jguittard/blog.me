@@ -1,11 +1,12 @@
 <?php $this->headTitle(sprintf('%d %s', $this->status, $this->reason)); ?>
-
-<h1>Oops!</h1>
-<h2>This is awkward.</h2>
-<p>We encountered a <?=$this->escapeHtml(sprintf('%d %s', $this->status, $this->reason))?> error.</p>
-<?php if ($this->status == 404) : ?>
-    <p>
-        You are looking for something that doesn't exist or may have moved. Check out one of the links on this page
-        or head back to <a href="/">Home</a>.
+<div class="rounded-lg border border-gray-200 bg-white p-10 text-center">
+    <p class="text-sm font-medium text-primary"><?= $this->escapeHtml((string) $this->status) ?></p>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight">Something went wrong</h1>
+    <p class="mt-2 text-sm text-gray-500">
+        <?= $this->escapeHtml(sprintf('%d %s', $this->status, $this->reason)) ?>
     </p>
-<?php endif; ?>
+    <a
+        href="/"
+        class="mt-6 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+    >Back to posts</a>
+</div>
