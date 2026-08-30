@@ -13,6 +13,7 @@ $cacheConfig = [
 ];
 
 $aggregator = new ConfigAggregator([
+    \Laminas\Hydrator\ConfigProvider::class,
     \PhpDb\Mysql\ConfigProvider::class,
     \Mezzio\Tooling\ConfigProvider::class,
     \PhpDb\ConfigProvider::class,
@@ -33,6 +34,7 @@ $aggregator = new ConfigAggregator([
         },
     // Default App module config
     App\ConfigProvider::class,
+    App\Infrastructure\Persistence\PersistenceConfigProvider::class,
     // Load application config in a pre-defined order in such a way that local settings
     // overwrite global settings. (Loaded as first to last):
     //   - `global.php`

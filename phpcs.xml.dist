@@ -19,7 +19,15 @@
     <exclude-pattern>config/routes.php</exclude-pattern>
 
     <!-- Include all rules from the Laminas Coding Standard -->
-    <rule ref="LaminasCodingStandard"/>
+    <rule ref="LaminasCodingStandard">
+        <!--
+            WebimpressCodingStandard.Arrays.DoubleArrow throws a fatal
+            "null used as array offset" under PHP 8.4+ on multi-line arrays with
+            mixed int/string keys (the sniff itself, not our code). It only
+            aligns `=>`, so drop it until the standard is updated for 8.4+.
+        -->
+        <exclude name="WebimpressCodingStandard.Arrays.DoubleArrow"/>
+    </rule>
 
     <rule ref="Squiz.Classes.ClassFileName.NoMatch">
         <exclude-pattern>src/ConfigProvider.*.php</exclude-pattern>
@@ -28,5 +36,23 @@
     <rule ref="PSR12.Files.FileHeader.IncorrectOrder">
         <exclude-pattern>config/pipeline.php</exclude-pattern>
         <exclude-pattern>src/MezzioInstaller/Resources/config/routes-*.php</exclude-pattern>
+    </rule>
+
+    <!--
+        laminas-coding-standard pins PHP_CodeSniffer ^3.10, which predates
+        PHP 8.4 property hooks and the PHP 8.5 `clone(...)` with-expression.
+        A handful of sniffs mis-parse these and their auto-fixers would corrupt
+        the code, so they are disabled for the two directories that use the
+        syntax. Every other sniff still runs there. Drop these once phpcs 4.x
+        is available through the standard.
+    -->
+    <rule ref="PSR2.Classes.PropertyDeclaration">
+        <exclude-pattern>src/App/src/Domain/ReadModel/*</exclude-pattern>
+    </rule>
+    <rule ref="Generic.WhiteSpace.ScopeIndent">
+        <exclude-pattern>src/App/src/Domain/ReadModel/*</exclude-pattern>
+    </rule>
+    <rule ref="WebimpressCodingStandard.Formatting.RedundantParentheses">
+        <exclude-pattern>src/App/src/Domain/Entity/*</exclude-pattern>
     </rule>
 </ruleset>

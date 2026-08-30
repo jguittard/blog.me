@@ -17,6 +17,49 @@
                 <directory name="test" />
             </errorLevel>
         </MissingOverrideAttribute>
+
+        <!--
+            Psalm 6.13 does not model the PHP 8.5 `clone(...)` with-expression:
+            it infers `object` from the call form, so the concrete `self` return
+            types of the entity mutators read as too specific.
+        -->
+        <MoreSpecificReturnType>
+            <errorLevel type="suppress">
+                <directory name="src/App/src/Domain/Entity" />
+            </errorLevel>
+        </MoreSpecificReturnType>
+        <LessSpecificReturnStatement>
+            <errorLevel type="suppress">
+                <directory name="src/App/src/Domain/Entity" />
+            </errorLevel>
+        </LessSpecificReturnStatement>
+
+        <!--
+            Virtual property hooks on the read models have no backing store and
+            are never "set"; Psalm 6.13's hook support still expects constructor
+            initialisation.
+        -->
+        <PropertyNotSetInConstructor>
+            <errorLevel type="suppress">
+                <directory name="src/App/src/Domain/ReadModel" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
+
+        <!--
+            The domain layer is an API surface consumed via the container and the
+            hydrator (reflection), which findUnusedCode cannot see, and not every
+            mutator has a caller yet.
+        -->
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <directory name="src/App/src/Domain" />
+            </errorLevel>
+        </PossiblyUnusedMethod>
+        <PossiblyUnusedProperty>
+            <errorLevel type="suppress">
+                <directory name="src/App/src/Domain" />
+            </errorLevel>
+        </PossiblyUnusedProperty>
     </issueHandlers>
 
     <projectFiles>

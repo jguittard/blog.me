@@ -3,7 +3,8 @@ DC  := docker compose
 PHP := $(DC) exec -u www-data php
 
 .DEFAULT_GOAL := help
-.PHONY: help certs build up down destroy logs ps install sh test hosts
+.PHONY: help certs build up down destroy logs ps install sh test test-integration \
+        db-migrate db-rollback db-status hosts
 
 help: ## List available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -37,8 +38,20 @@ install: ## Run composer install inside the container
 sh: ## Open a shell in the PHP container
 	$(PHP) sh
 
-test: ## Run the test suite inside the container
+test: ## Run the unit test suite inside the container
 	$(PHP) composer test
+
+test-integration: ## Run the DB integration tests (stack must be up)
+	$(PHP) composer test-integration
+
+db-migrate: ## Apply pending database migrations
+	$(PHP) php bin/migrate.php migrate
+
+db-rollback: ## Revert the last migration (make db-rollback n=3 for more)
+	$(PHP) php bin/migrate.php rollback $(or $(n),1)
+
+db-status: ## Show migration status
+	$(PHP) php bin/migrate.php status
 
 hosts: ## Print the /etc/hosts entries you need
 	@echo "127.0.0.1 blog.me www.blog.me mail.blog.me s3.blog.me minio.blog.me"

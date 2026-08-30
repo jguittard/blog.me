@@ -51,6 +51,7 @@
         "laminas/laminas-component-installer": "^2.6 || ^3.5",
         "laminas/laminas-config-aggregator": "^1.18",
         "laminas/laminas-diactoros": "^3.8.0",
+        "laminas/laminas-hydrator": "^4.19",
         "laminas/laminas-servicemanager": "^3.22",
         "laminas/laminas-stdlib": "^3.21",
         "mezzio/mezzio": "^3.23.1",
@@ -109,8 +110,9 @@
         ],
         "static-analysis": "psalm --stats",
         "static-analysis-update-baseline": "psalm --stats --update-baseline",
-        "test": "phpunit --colors=always",
-        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+        "test": "phpunit --colors=always --testsuite unit",
+        "test-integration": "phpunit --colors=always --testsuite integration",
+        "test-coverage": "phpunit --colors=always --testsuite unit --coverage-clover clover.xml"
     },
     "scripts-descriptions": {
         "clear-config-cache": "Clears merged config cache. Required for config changes to be applied.",
