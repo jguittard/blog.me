@@ -20,4 +20,9 @@ final readonly class Tag
     {
         return new self(Cuid::generate(), Slug::fromTitle($name), $name);
     }
+
+    public function rename(string $name): self
+    {
+        return clone($this, ['name' => $name, 'slug' => Slug::fromTitle($name)]);
+    }
 }

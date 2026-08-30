@@ -13,6 +13,9 @@ interface TagRepositoryInterface
 
     public function findBySlug(Slug $slug): ?Tag;
 
+    /** @return list<Tag> ordered by name */
+    public function all(): array;
+
     /**
      * Resolve each name to an existing tag or create it; returns the saved tags.
      *

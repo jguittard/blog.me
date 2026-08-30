@@ -1,0 +1,26 @@
+<?php
+/** @var \Admin\Form\CategoryForm $form */
+/** @var string $heading */
+/** @var string $action */
+$this->headTitle($heading);
+$form->prepare();
+
+$field = fn (string $name): string => $this->render('admin::partial/field', ['element' => $form->get($name)]);
+?>
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold tracking-tight"><?= $this->escapeHtml($heading) ?></h1>
+        <a href="<?= $this->url('admin.categories.index') ?>" class="text-sm text-gray-500 hover:text-gray-900">Cancel</a>
+    </div>
+
+    <form method="post" action="<?= $this->escapeHtmlAttr($action) ?>" class="space-y-5 rounded-lg border border-gray-200 bg-white p-6">
+        <?= $field('name') ?>
+        <?= $field('description') ?>
+
+        <div class="flex justify-end border-t border-gray-200 pt-5">
+            <button type="submit" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                Save category
+            </button>
+        </div>
+    </form>
+</div>

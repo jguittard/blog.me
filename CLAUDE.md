@@ -12,9 +12,11 @@ laminas-diactoros (PSR-7). PHP 8.5.
 The app has a blog model — User / Post / Category / Tag with a php-db persistence
 layer, `laminas-hydrator` mapping, and `Sql\Ddl` migrations (see below) — and a
 server-rendered reader frontend: `GET /` (paginated post list), `GET /posts/{slug}`,
-`GET /categories`, `GET /categories/{slug}`, plus `GET /api/ping`. The `.phtml`
-templates use Tailwind via the Play CDN (`cdn.tailwindcss.com`), styled to the
-shadcn/ui look (`bg-gray-50` page, white cards, `#2563eb` primary, Inter).
+`GET /categories`, `GET /categories/{slug}`, plus `GET /api/ping`. There is also an
+`Admin` module (`src/Admin/`) with full CRUD for posts, categories and tags under
+`/admin` (see below). The `.phtml` templates use Tailwind via the Play CDN
+(`cdn.tailwindcss.com`), styled to the shadcn/ui look (`bg-gray-50` page, white
+cards, `#2563eb` primary, Inter).
 
 ## Commands
 
@@ -169,6 +171,46 @@ Domain / Infrastructure split inside the `App` module:
 Never use the `@deprecated` `PhpDb\Adapter\Adapter::query()`; use
 `executeQuery()` / `prepareQuery()` / `prepareStatementForSqlObject()`.
 
+### Admin module (`src/Admin/`)
+
+A second Mezzio module (PSR-4 `Admin\`, wired by `Admin\ConfigProvider` in
+`config/config.php`) holding the write side of the site. Routes are in
+`config/routes.php` under `/admin`: a dashboard plus `index` / `create`
+(`GET`+`POST` on `…/new`) / `edit` (`GET`+`POST` on `…/{id}/edit`) / `delete`
+(`POST` on `…/{id}/delete`) for each of posts, categories and tags. `/admin` is
+**not** authenticated yet.
+
+- **No auth** — `CurrentUser\CurrentUserProvider` resolves one hard-coded user
+  (`admin.current_user_email` config key, default `julien@guittard.me`, via
+  `CurrentUserProviderFactory`) for post authorship and the layout header. It
+  throws if that user is not seeded. CSRF is deferred to the auth iteration.
+- **Handlers** (`src/Admin/src/Handler/`) extend `AbstractAdminHandler`
+  (`TemplateRendererInterface` + `UrlHelper` + `CurrentUserProvider`); subclasses
+  add their own deps and call `parent::__construct(...)`. All are built by
+  `ReflectionBasedAbstractFactory`. `AbstractAdminHandler::view()` renders the
+  child template then wraps it in `admin::layout` **in a second `render()` call**
+  (both with `'layout' => false`) — mezzio-laminasviewrenderer does not share
+  view variables between a template and its layout, only placeholder helpers, so
+  `currentUser` / `activeNav` are injected into both explicitly.
+- **Forms** (`src/Admin/src/Form/`) — `PostForm` / `CategoryForm` / `TagForm`
+  extend `Laminas\Form\Form`, build their elements and attach a
+  `Laminas\InputFilter\InputFilter` (laminas validators/filters) in the
+  constructor. `PostForm` takes category options; `PostFormFactory` injects them
+  from `CategoryRepositoryInterface`. Rendered with the laminas-form view helpers
+  via `admin::partial/field`. `laminas/laminas-form` needs `laminas/laminas-i18n`
+  (form view helpers) and the `Uri` validator needs `laminas/laminas-uri` — both
+  are explicit `require`s.
+- **`Support/`** — `PostFormMapper` turns validated form arrays into `Post`
+  entities via the domain mutators (`rename` / `editBody` / `reclassify` /
+  `withImage` / `publish`|`unpublish`|`archive`) and back (`toArray()` for
+  populate); `PostWriter` orchestrates mapper + `findOrCreateByNames()` +
+  `PostRepositoryInterface::save()`.
+- **Templates** (`src/Admin/templates/`, namespace `admin`) — `layout.phtml` is a
+  full document (sidebar + "Signed in as …" header), same Tailwind Play CDN setup
+  as the public layout.
+- `PostRepositoryInterface::all()` / `TagRepositoryInterface::all()` were added
+  for the admin indexes (drafts included, unlike the read repository).
+
 ### Configuration system
 
 `config/config.php` runs `ConfigAggregator` over, in order: framework
@@ -184,10 +226,13 @@ to take effect** (caching is off in development mode).
 
 ## Tests
 
-PHPUnit 11, tests in `test/AppTest/` (PSR-4 `AppTest\`), mirroring `src/App/src/`.
-Two suites: `composer test` (`unit`, no DB) and `composer test-integration`
-(`integration`, `test/AppTest/Integration/` — hits the `mariadb` container,
-runs migrations + `TRUNCATE` in `setUp`). `phpunit.xml.dist` sets
+PHPUnit 11, tests in `test/AppTest/` and `test/AdminTest/` (PSR-4 `AppTest\` /
+`AdminTest\`), mirroring `src/App/src/` and `src/Admin/src/`. Two suites:
+`composer test` (`unit`, no DB) and `composer test-integration` (`integration`,
+`test/{App,Admin}Test/Integration/` — hits the `mariadb` container, runs
+migrations + `TRUNCATE` in `setUp`). `AdminTest\Integration\BlogAdminTest` keeps
+one scenario per test method so each gets a fresh container (the form services
+are shared/singleton and hold validation state between requests in-process). `phpunit.xml.dist` sets
 `failOnAllIssues="true"` — deprecations and warnings fail the suite, so use
 PHPUnit attributes (`#[DataProvider]`), not `@` annotations.
 `AppTest\InMemoryContainer` is a minimal PSR-11 stub for testing

@@ -1,0 +1,12 @@
+<?php
+/** @var \Laminas\Form\ElementInterface $element */
+?>
+<div class="space-y-1">
+    <?php if ($element->getLabel() !== null && $element->getLabel() !== ''): ?>
+        <label for="<?= $this->escapeHtmlAttr($element->getName()) ?>" class="block text-sm font-medium text-gray-700">
+            <?= $this->escapeHtml($element->getLabel()) ?>
+        </label>
+    <?php endif; ?>
+    <?= $this->formElement($element) ?>
+    <?= $this->formElementErrors($element, ['class' => 'mt-1 list-none space-y-0.5 text-sm text-red-600']) ?>
+</div>

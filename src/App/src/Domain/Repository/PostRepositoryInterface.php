@@ -14,6 +14,13 @@ interface PostRepositoryInterface
     public function findBySlug(Slug $slug): ?Post;
 
     /**
+     * Every post, drafts included, newest change first — for the admin index.
+     *
+     * @return list<Post>
+     */
+    public function all(): array;
+
+    /**
      * Persist a new or existing post and synchronise its tag links.
      *
      * @param  list<string> $tagIds

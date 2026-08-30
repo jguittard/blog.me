@@ -4,7 +4,9 @@ A small blog application built on [Mezzio](https://docs.mezzio.dev/mezzio/) (Lam
 — PSR-15 middleware, PHP 8.5, `php-db/phpdb` for persistence, `laminas-hydrator`
 mapping SQL rows to immutable entities and DTOs. The reader frontend is
 server-rendered `.phtml` (post list, single post, category browsing) styled with
-Tailwind (Play CDN) to the shadcn/ui look.
+Tailwind (Play CDN) to the shadcn/ui look. An admin area at **`/admin`** provides
+CRUD for posts, categories and tags with `laminas-form` + `laminas-input-filter`
+(no authentication yet — the "current user" is a hard-coded seeded account).
 
 The whole environment (Caddy TLS · nginx · php-fpm · MariaDB · Redis · MinIO ·
 Mailpit) runs in Docker. See [`docker/README.md`](docker/README.md) for the stack
@@ -43,6 +45,7 @@ Then open **<https://blog.me:8443>**.
 | What | URL |
 |------|-----|
 | App | <https://blog.me:8443> |
+| Admin | <https://blog.me:8443/admin> |
 | Mailpit (outgoing mail) | <https://mail.blog.me:8443> |
 | MinIO console | <https://minio.blog.me:8443> — `minio` / `minio12345` |
 | MinIO S3 API | <https://s3.blog.me:8443> (path-style) |
@@ -132,8 +135,10 @@ src/App/src/
     Hydrator/                  HydratorRegistry (ReflectionHydrator + strategies)
     Migration/                 Sql\Ddl migrations + runner
   templates/                   .phtml views (Tailwind Play CDN); layout + partials
+src/Admin/src/                 /admin CRUD module: Handler/, Form/ (laminas-form +
+                               input-filter), Support/, CurrentUser/
 config/                        pipeline, routes, ConfigProviders, autoload/*.php
-test/AppTest/                  mirrors src/; Integration/ = DB-backed suite
+test/{App,Admin}Test/          mirror src/; Integration/ = DB-backed suite
 docker/                        Dockerfile, Caddyfile, nginx, compose helpers
 ```
 

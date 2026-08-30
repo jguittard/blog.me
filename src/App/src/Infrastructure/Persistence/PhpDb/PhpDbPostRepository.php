@@ -11,6 +11,7 @@ use App\Infrastructure\Persistence\Hydrator\HydratorRegistry;
 use Laminas\Hydrator\HydratorInterface;
 use PhpDb\Adapter\AdapterInterface;
 use PhpDb\ResultSet\HydratingResultSet;
+use PhpDb\Sql\Select;
 use PhpDb\TableGateway\Feature\FeatureSet;
 use PhpDb\TableGateway\TableGateway;
 use ReflectionClass;
@@ -58,6 +59,24 @@ final class PhpDbPostRepository implements PostRepositoryInterface
         $row = $this->firstOf($this->table->select(['slug' => (string) $slug]));
 
         return $row instanceof Post ? $row : null;
+    }
+
+    /** @return list<Post> */
+    public function all(): array
+    {
+        $resultSet = $this->table->select(static function (Select $select): void {
+            $select->order('updated_at DESC');
+        });
+
+        $posts = [];
+        /** @var mixed $row */
+        foreach ($resultSet as $row) {
+            if ($row instanceof Post) {
+                $posts[] = $row;
+            }
+        }
+
+        return $posts;
     }
 
     /** @param list<string> $tagIds */

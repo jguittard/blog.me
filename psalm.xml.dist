@@ -19,6 +19,18 @@
         </MissingOverrideAttribute>
 
         <!--
+            laminas-form's `Form` is `@template TFilteredValues`, but the form
+            subclasses never read the filtered values back through the generic
+            API (they use `getData()` behind their own array shapes), so pinning
+            the parameter would only add noise.
+        -->
+        <MissingTemplateParam>
+            <errorLevel type="suppress">
+                <directory name="src/Admin/src/Form" />
+            </errorLevel>
+        </MissingTemplateParam>
+
+        <!--
             Psalm 6.13 does not model the PHP 8.5 `clone(...)` with-expression:
             it infers `object` from the call form, so the concrete `self` return
             types of the entity mutators read as too specific.
@@ -48,11 +60,13 @@
         <!--
             The domain layer is an API surface consumed via the container and the
             hydrator (reflection), which findUnusedCode cannot see, and not every
-            mutator has a caller yet.
+            mutator has a caller yet. Admin handlers are likewise built by
+            ReflectionBasedAbstractFactory, so their constructors read as unused.
         -->
         <PossiblyUnusedMethod>
             <errorLevel type="suppress">
                 <directory name="src/App/src/Domain" />
+                <directory name="src/Admin/src/Handler" />
             </errorLevel>
         </PossiblyUnusedMethod>
         <PossiblyUnusedProperty>
