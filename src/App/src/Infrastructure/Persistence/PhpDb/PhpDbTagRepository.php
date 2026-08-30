@@ -27,7 +27,7 @@ final class PhpDbTagRepository implements TagRepositoryInterface
     private readonly TableGateway $table;
 
     public function __construct(
-        private readonly AdapterInterface $db,
+        AdapterInterface $db,
         HydratorRegistry $hydrators,
     ) {
         $this->hydrator = $hydrators->tag();
@@ -40,7 +40,7 @@ final class PhpDbTagRepository implements TagRepositoryInterface
         );
     }
 
-    public function find(int $id): ?Tag
+    public function find(string $id): ?Tag
     {
         $row = $this->firstOf($this->table->select(['id' => $id]));
 
@@ -71,7 +71,7 @@ final class PhpDbTagRepository implements TagRepositoryInterface
     }
 
     /** @return list<Tag> */
-    public function forPost(int $postId): array
+    public function forPost(string $postId): array
     {
         $resultSet = $this->table->select(static function (Select $select) use ($postId): void {
             $select->join('post_tag', 'post_tag.tag_id = tags.id', [], Select::JOIN_INNER)
@@ -92,22 +92,12 @@ final class PhpDbTagRepository implements TagRepositoryInterface
 
     public function save(Tag $tag): Tag
     {
-        /** @var array<string, mixed> $data */
-        $data = $this->hydrator->extract($tag);
-        unset($data['id']);
-
-        if ($tag->id === null) {
-            $this->table->insert($data);
-
-            return $tag->withId((int) $this->db->getDriver()->getConnection()->getLastGeneratedValue());
-        }
-
-        $this->table->update($data, ['id' => $tag->id]);
+        $this->upsert($this->table, $this->hydrator, $tag->id, $tag);
 
         return $tag;
     }
 
-    public function delete(int $id): void
+    public function delete(string $id): void
     {
         $this->table->delete(['id' => $id]);
     }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Migration;
 
+use App\Domain\Value\Cuid;
 use PhpDb\Adapter\AdapterInterface;
+use PhpDb\Sql\Ddl\Column\Char;
 use PhpDb\Sql\Sql;
 use PhpDb\Sql\SqlInterface;
 use ReflectionClass;
@@ -20,6 +22,12 @@ abstract class AbstractMigration implements MigrationInterface
         $digits = preg_replace('/\D/', '', (new ReflectionClass($this))->getShortName());
 
         return substr($digits ?? '', 0, 14);
+    }
+
+    /** A fixed-width CUID column, used for every primary and foreign key. */
+    protected function idColumn(string $name, bool $nullable = false): Char
+    {
+        return new Char($name, Cuid::LENGTH, $nullable);
     }
 
     /** Run a DDL statement object (or raw SQL) against the connection. */

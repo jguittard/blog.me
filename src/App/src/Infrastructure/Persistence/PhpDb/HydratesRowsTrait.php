@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\PhpDb;
 
+use Laminas\Hydrator\HydratorInterface;
 use PhpDb\ResultSet\ResultSetInterface;
+use PhpDb\TableGateway\TableGateway;
 
 use function is_object;
 
@@ -19,5 +21,25 @@ trait HydratesRowsTrait
         }
 
         return null;
+    }
+
+    /**
+     * Insert a new row, or update the existing one keyed by its CUID primary
+     * key. Application-generated ids mean there is no auto-increment to read
+     * back, so we probe for the row first.
+     */
+    private function upsert(TableGateway $table, HydratorInterface $hydrator, string $id, object $entity): void
+    {
+        /** @var array<string, mixed> $data */
+        $data = $hydrator->extract($entity);
+
+        if ($this->firstOf($table->select(['id' => $id])) !== null) {
+            unset($data['id']);
+            $table->update($data, ['id' => $id]);
+
+            return;
+        }
+
+        $table->insert($data);
     }
 }

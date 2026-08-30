@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Migration;
 
 use PhpDb\Adapter\AdapterInterface;
-use PhpDb\Sql\Ddl\Column\Integer;
 use PhpDb\Sql\Ddl\Column\Text;
 use PhpDb\Sql\Ddl\Column\Varchar;
 use PhpDb\Sql\Ddl\Constraint\PrimaryKey;
@@ -24,10 +23,7 @@ final class Version20260101000002CreateCategoriesTable extends AbstractMigration
     {
         $table = new CreateTable('categories');
 
-        $id = new Integer('id');
-        $id->setOption('autoincrement', true);
-
-        $table->addColumn($id);
+        $table->addColumn($this->idColumn('id'));
         $table->addColumn(new Varchar('slug', 120));
         $table->addColumn(new Varchar('name', 120));
         $table->addColumn(new Text('description', null, true));

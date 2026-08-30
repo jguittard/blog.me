@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Entity;
 
+use App\Domain\Value\Cuid;
 use App\Domain\Value\PostStatus;
 use App\Domain\Value\Slug;
 use DateTimeImmutable;
@@ -22,9 +23,9 @@ final readonly class Post
     private const WORDS_PER_MINUTE = 200;
 
     public function __construct(
-        public ?int $id,
-        public int $authorId,
-        public ?int $categoryId,
+        public string $id,
+        public string $authorId,
+        public ?string $categoryId,
         public Slug $slug,
         public string $title,
         public ?string $excerpt,
@@ -37,10 +38,10 @@ final readonly class Post
     }
 
     public static function draft(
-        int $authorId,
+        string $authorId,
         string $title,
         string $body,
-        ?int $categoryId = null,
+        ?string $categoryId = null,
         ?string $excerpt = null,
         ?DateTimeImmutable $now = null,
     ): self {
@@ -49,7 +50,7 @@ final readonly class Post
         $now = ($now ?? new DateTimeImmutable())->setMicrosecond(0);
 
         return new self(
-            id: null,
+            id: Cuid::generate(),
             authorId: $authorId,
             categoryId: $categoryId,
             slug: Slug::fromTitle($title),
@@ -63,11 +64,6 @@ final readonly class Post
         );
     }
 
-    public function withId(int $id): self
-    {
-        return clone($this, ['id' => $id]);
-    }
-
     public function rename(string $title): self
     {
         return $this->with(['title' => $title, 'slug' => Slug::fromTitle($title)]);
@@ -78,7 +74,7 @@ final readonly class Post
         return $this->with(['body' => $body, 'excerpt' => $excerpt]);
     }
 
-    public function reclassify(?int $categoryId): self
+    public function reclassify(?string $categoryId): self
     {
         return $this->with(['categoryId' => $categoryId]);
     }

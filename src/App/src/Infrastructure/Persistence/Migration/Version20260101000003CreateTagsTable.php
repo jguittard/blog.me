@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Migration;
 
 use PhpDb\Adapter\AdapterInterface;
-use PhpDb\Sql\Ddl\Column\Integer;
 use PhpDb\Sql\Ddl\Column\Varchar;
 use PhpDb\Sql\Ddl\Constraint\PrimaryKey;
 use PhpDb\Sql\Ddl\Constraint\UniqueKey;
@@ -23,10 +22,7 @@ final class Version20260101000003CreateTagsTable extends AbstractMigration
     {
         $table = new CreateTable('tags');
 
-        $id = new Integer('id');
-        $id->setOption('autoincrement', true);
-
-        $table->addColumn($id);
+        $table->addColumn($this->idColumn('id'));
         $table->addColumn(new Varchar('slug', 80));
         $table->addColumn(new Varchar('name', 80));
 

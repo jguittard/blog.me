@@ -9,17 +9,17 @@ use App\Domain\Value\Slug;
 
 interface PostRepositoryInterface
 {
-    public function find(int $id): ?Post;
+    public function find(string $id): ?Post;
 
     public function findBySlug(Slug $slug): ?Post;
 
     /**
      * Persist a new or existing post and synchronise its tag links.
      *
-     * @param  list<int> $tagIds
+     * @param  list<string> $tagIds
      * @return Post  the post with its id populated
      */
     public function save(Post $post, array $tagIds = []): Post;
 
-    public function delete(int $id): void;
+    public function delete(string $id): void;
 }

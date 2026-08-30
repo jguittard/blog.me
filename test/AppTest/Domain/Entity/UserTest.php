@@ -9,6 +9,8 @@ use App\Domain\Value\Email;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
+use function preg_match;
+
 final class UserTest extends TestCase
 {
     private function user(): User
@@ -21,25 +23,24 @@ final class UserTest extends TestCase
         );
     }
 
-    public function testRegisterProducesUnsavedUser(): void
+    public function testRegisterGeneratesACuidAndNormalisesEmail(): void
     {
         $user = $this->user();
 
-        self::assertNull($user->id);
+        self::assertSame(1, preg_match('/^[a-z0-9]{24}$/', $user->id));
         self::assertSame('jane@example.com', (string) $user->email);
     }
 
-    public function testMutatorsAreImmutable(): void
+    public function testMutatorsAreImmutableAndKeepTheId(): void
     {
-        $user = $this->user();
-
-        $renamed = $user->rename('Jane Smith')->withId(5)->withPasswordHash('newhash');
+        $user    = $this->user();
+        $renamed = $user->rename('Jane Smith')->withPasswordHash('newhash');
 
         self::assertSame('Jane Smith', $renamed->displayName);
-        self::assertSame(5, $renamed->id);
         self::assertSame('newhash', $renamed->passwordHash);
+        self::assertSame($user->id, $renamed->id);
 
         self::assertSame('Jane Doe', $user->displayName);
-        self::assertNull($user->id);
+        self::assertSame('hash', $user->passwordHash);
     }
 }

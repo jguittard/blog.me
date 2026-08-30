@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace AppTest\Domain\Entity;
 
 use App\Domain\Entity\Post;
+use App\Domain\Value\Cuid;
 use App\Domain\Value\PostStatus;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
+use function preg_match;
 use function str_repeat;
 
 final class PostTest extends TestCase
@@ -16,10 +18,10 @@ final class PostTest extends TestCase
     private function draft(): Post
     {
         return Post::draft(
-            authorId: 1,
+            authorId: Cuid::generate(),
             title: 'Property Hooks in PHP 8.5',
             body: str_repeat('word ', 400),
-            categoryId: 7,
+            categoryId: Cuid::generate(),
             excerpt: 'A short look.',
             now: new DateTimeImmutable('2026-01-01 12:00:00'),
         );
@@ -29,11 +31,19 @@ final class PostTest extends TestCase
     {
         $post = $this->draft();
 
-        self::assertNull($post->id);
+        self::assertSame(1, preg_match('/^[a-z0-9]{24}$/', $post->id));
         self::assertSame(PostStatus::Draft, $post->status);
         self::assertNull($post->publishedAt);
         self::assertSame('property-hooks-in-php-8-5', $post->slug->value);
         self::assertEquals($post->createdAt, $post->updatedAt);
+    }
+
+    public function testMutationsKeepTheSameId(): void
+    {
+        $draft = $this->draft();
+
+        self::assertSame($draft->id, $draft->publish()->id);
+        self::assertSame($draft->id, $draft->rename('Something Else')->id);
     }
 
     public function testPublishReturnsNewInstanceAndLeavesOriginalUntouched(): void
@@ -74,19 +84,11 @@ final class PostTest extends TestCase
 
     public function testReadingTimeMinutes(): void
     {
-        $post = Post::draft(1, 'x', str_repeat('word ', 401), now: new DateTimeImmutable());
+        $author = Cuid::generate();
+        $post   = Post::draft($author, 'x', str_repeat('word ', 401), now: new DateTimeImmutable());
 
         // 401 words / 200 wpm -> 3 minutes
         self::assertSame(3, $post->readingTimeMinutes());
-        self::assertSame(1, Post::draft(1, 'y', 'tiny body', now: new DateTimeImmutable())->readingTimeMinutes());
-    }
-
-    public function testWithIdDoesNotBumpUpdatedAt(): void
-    {
-        $post  = $this->draft();
-        $saved = $post->withId(42);
-
-        self::assertSame(42, $saved->id);
-        self::assertEquals($post->updatedAt, $saved->updatedAt);
+        self::assertSame(1, Post::draft($author, 'y', 'tiny body', now: new DateTimeImmutable())->readingTimeMinutes());
     }
 }

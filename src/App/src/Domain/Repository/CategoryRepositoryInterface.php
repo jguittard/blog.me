@@ -9,7 +9,7 @@ use App\Domain\Value\Slug;
 
 interface CategoryRepositoryInterface
 {
-    public function find(int $id): ?Category;
+    public function find(string $id): ?Category;
 
     public function findBySlug(Slug $slug): ?Category;
 
@@ -18,5 +18,5 @@ interface CategoryRepositoryInterface
 
     public function save(Category $category): Category;
 
-    public function delete(int $id): void;
+    public function delete(string $id): void;
 }

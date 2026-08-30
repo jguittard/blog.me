@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Entity;
 
+use App\Domain\Value\Cuid;
 use App\Domain\Value\Email;
 use DateTimeImmutable;
 
 final readonly class User
 {
     public function __construct(
-        public ?int $id,
+        public string $id,
         public Email $email,
         public string $displayName,
         public string $passwordHash,
@@ -27,12 +28,7 @@ final readonly class User
         // Second precision only, to match MySQL DATETIME.
         $now = ($now ?? new DateTimeImmutable())->setMicrosecond(0);
 
-        return new self(null, $email, $displayName, $passwordHash, $now);
-    }
-
-    public function withId(int $id): self
-    {
-        return clone($this, ['id' => $id]);
+        return new self(Cuid::generate(), $email, $displayName, $passwordHash, $now);
     }
 
     public function rename(string $displayName): self

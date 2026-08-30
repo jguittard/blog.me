@@ -18,7 +18,7 @@ final class PostListItemTest extends TestCase
     private function item(?string $excerpt, string $bodyPreview, ?DateTimeImmutable $publishedAt): PostListItem
     {
         return new PostListItem(
-            id: 1,
+            id: 'clh1abcd2efgh3ijkl4mnop5',
             slug: 'hello-world',
             title: 'Hello World',
             excerpt: $excerpt,

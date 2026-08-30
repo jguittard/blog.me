@@ -73,8 +73,8 @@ foreach ($authorDefs as [$name, $email]) {
     $existing = $users->findByEmail(Email::fromString($email));
     $user     = $existing ?? $users->save(User::register(Email::fromString($email), $name, $passwordHash));
 
-    $authorIds[] = (int) $user->id;
-    printf("%s author  %-16s <%s>  #%d\n", $existing ? '=' : '+', $name, $email, $user->id);
+    $authorIds[] = $user->id;
+    printf("%s author  %-16s <%s>  %s\n", $existing ? '=' : '+', $name, $email, $user->id);
 }
 
 // ---------------------------------------------------------------------------
@@ -97,8 +97,8 @@ foreach ($categoryDefs as $name => $description) {
     $existing = $categories->findBySlug(Slug::fromTitle($name));
     $category = $existing ?? $categories->save(Category::create($name, $description));
 
-    $categoryIds[$name] = (int) $category->id;
-    printf("%s category %-28s #%d\n", $existing ? '=' : '+', $name, $category->id);
+    $categoryIds[$name] = $category->id;
+    printf("%s category %-28s %s\n", $existing ? '=' : '+', $name, $category->id);
 }
 
 // ---------------------------------------------------------------------------
@@ -512,7 +512,7 @@ foreach ($postDefs as $index => [$title, $categoryName, $tagNames, $excerpt, $bo
     $publishedAt = $publishFrom->modify('-' . (($total - 1 - $index) * 9 + 2) . ' days');
 
     $tagIds = array_map(
-        static fn (Tag $tag): int => (int) $tag->id,
+        static fn (Tag $tag): string => $tag->id,
         $tags->findOrCreateByNames($tagNames),
     );
 
@@ -521,7 +521,7 @@ foreach ($postDefs as $index => [$title, $categoryName, $tagNames, $excerpt, $bo
     $created++;
 
     printf(
-        "+ post   #%-3d [%s] %s  (author #%d, %d tags, %s)\n",
+        "+ post   %s [%s] %s  (author %s, %d tags, %s)\n",
         $saved->id,
         $categoryName,
         $title,
