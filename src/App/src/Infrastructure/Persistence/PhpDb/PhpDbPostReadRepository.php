@@ -23,8 +23,8 @@ use RuntimeException;
  */
 final class PhpDbPostReadRepository implements PostReadRepositoryInterface
 {
-    private const TAGS_EXPR    = "GROUP_CONCAT(DISTINCT t.name ORDER BY t.name SEPARATOR ',')";
-    private const PREVIEW_EXPR = 'LEFT(p.body, 300)';
+    private const string TAGS_EXPR    = "GROUP_CONCAT(DISTINCT t.name ORDER BY t.name SEPARATOR ',')";
+    private const string PREVIEW_EXPR = 'LEFT(p.body, 300)';
 
     private readonly Sql $sql;
 

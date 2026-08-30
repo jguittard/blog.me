@@ -16,7 +16,7 @@ use function trim;
  */
 final readonly class Slug
 {
-    private const PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+    private const string PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
 
     private function __construct(public string $value)
     {

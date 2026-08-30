@@ -22,7 +22,7 @@ use function preg_match;
 
 final class HydratorRegistryTest extends TestCase
 {
-    private const CUID = 'clh1abcd2efgh3ijkl4mnop5';
+    private const string CUID = 'clh1abcd2efgh3ijkl4mnop5';
 
     private HydratorRegistry $registry;
 

@@ -14,7 +14,7 @@ use Visus\Cuid2\Cuid2;
  */
 final class Cuid
 {
-    public const LENGTH = 24;
+    public const int LENGTH = 24;
 
     public static function generate(): string
     {

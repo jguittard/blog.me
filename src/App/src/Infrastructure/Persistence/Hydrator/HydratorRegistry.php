@@ -26,7 +26,7 @@ use Laminas\Hydrator\Strategy\StrategyInterface;
 final class HydratorRegistry
 {
     /** MySQL `DATETIME` literal format. */
-    private const DATETIME_FORMAT = 'Y-m-d H:i:s';
+    private const string DATETIME_FORMAT = 'Y-m-d H:i:s';
 
     /** @var array<string, ReflectionHydrator> */
     private array $cache = [];

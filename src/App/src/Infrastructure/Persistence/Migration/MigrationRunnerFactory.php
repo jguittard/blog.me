@@ -11,8 +11,12 @@ use function assert;
 
 final class MigrationRunnerFactory
 {
-    /** Registered, ordered list of migration service names. */
-    public const MIGRATIONS = [
+    /**
+     * Registered, ordered list of migration service names.
+     *
+     * @var list<class-string<MigrationInterface>>
+     */
+    public const array MIGRATIONS = [
         Version20260101000001CreateUsersTable::class,
         Version20260101000002CreateCategoriesTable::class,
         Version20260101000003CreateTagsTable::class,
