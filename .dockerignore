@@ -1,0 +1,12 @@
+.git
+.idea
+vendor
+node_modules
+data
+docker/caddy/certs
+.env
+*.cache
+.phpunit.cache
+.phpcs-cache
+.psalm-cache
+clover.xml

@@ -1,0 +1,31 @@
+# Local development proxy. TLS uses mkcert-minted certs mounted at
+# /etc/caddy/certs (run `make certs` / bin/setup-certs.sh on the host first).
+
+(local_tls) {
+	tls /etc/caddy/certs/blog.me.pem /etc/caddy/certs/blog.me-key.pem
+}
+
+# The application.
+blog.me, www.blog.me, localhost {
+	import local_tls
+	encode zstd gzip
+	reverse_proxy nginx:80
+}
+
+# Mailpit web UI.
+mail.blog.me {
+	import local_tls
+	reverse_proxy mailpit:8025
+}
+
+# MinIO S3 API (use path-style addressing: https://s3.blog.me/<bucket>/<key>).
+s3.blog.me {
+	import local_tls
+	reverse_proxy minio:9000
+}
+
+# MinIO web console.
+minio.blog.me {
+	import local_tls
+	reverse_proxy minio:9001
+}

@@ -1,0 +1,13 @@
+/.phpcs-cache
+/.psalm-cache
+/.phpunit.cache
+/clover.xml
+/coveralls-upload.json
+/phpunit.xml
+/vendor/
+/.idea/
+
+# Docker local environment
+/.env
+/docker/caddy/certs/*
+!/docker/caddy/certs/.gitkeep
