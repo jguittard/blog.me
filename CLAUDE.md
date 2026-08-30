@@ -9,8 +9,10 @@ scaffolded from `mezzio/mezzio-skeleton`. Runtime stack: laminas-servicemanager
 (DI), mezzio-fastroute (routing), mezzio-laminasviewrenderer (templates),
 laminas-diactoros (PSR-7). PHP 8.5.
 
-The application code so far is essentially the skeleton default plus a
-`GET /api/ping` endpoint (`App\Handler\PingHandler`, returns `{"ack": <time>}`).
+Beyond the skeleton defaults (`GET /` home page, `GET /api/ping`) the app has a
+blog model — User / Post / Category / Tag with a php-db persistence layer,
+`laminas-hydrator` mapping, and `Sql\Ddl` migrations (see below). No blog HTTP
+handlers or routes yet.
 
 ## Commands
 
@@ -44,6 +46,12 @@ composer development-status
 When adding a Psalm-flagged issue that is pre-existing elsewhere, regenerate the
 baseline with `composer static-analysis-update-baseline` rather than suppressing
 inline.
+
+`phpcs.xml.dist` / `psalm.xml.dist` disable a few sniffs/issues for
+`src/App/src/Domain/*` — the pinned PHP_CodeSniffer (`^3.10`) and Psalm 6.13
+mis-parse PHP 8.4 property hooks and the 8.5 `clone(...)` with-expression. Each
+carries a comment; drop them once the tools catch up. New domain code should
+otherwise pass both cleanly.
 
 ## Dependencies
 
@@ -105,6 +113,43 @@ dispatch invokes a `RequestHandlerInterface`.
 - **Templates** (`src/App/templates/`) — `.phtml` for laminas-view, referenced as
   `namespace::name` (e.g. `app::home-page`). `layout::default` wraps pages.
 
+### Blog model (`src/App/src/Domain` + `src/App/src/Infrastructure`)
+
+Domain / Infrastructure split inside the `App` module:
+
+- **`Domain/Entity/`** — `final readonly` entities (`User`, `Post`, `Category`,
+  `Tag`). Immutable: mutations return a new instance via PHP 8.5
+  `clone($this, [...])`; derived values are methods (`Post::isPublished()`,
+  `readingTimeMinutes()`). `?int $id` is null until persisted (`withId()`).
+  Timestamps are truncated to seconds (`->setMicrosecond(0)`) to round-trip
+  through MySQL `DATETIME`.
+- **`Domain/Value/`** — `PostStatus` backed enum; `Slug` / `Email` `final
+  readonly` value objects with validating `fromString()` factories.
+- **`Domain/ReadModel/`** — `PostListItem` / `PostView`: flat, hydrate-only DTOs
+  for JOIN queries. Not `readonly` (PHP forbids hooks on readonly) — immutability
+  via `public private(set)`; derived fields (`href`, `isNew`, `summary`,
+  `readingTimeMinutes`) are virtual **property hooks**.
+- **`Domain/Repository/`** — interfaces only. `*RepositoryInterface` (write side,
+  entities) + `PostReadRepositoryInterface` (read side, DTOs).
+- **`Infrastructure/Persistence/Hydrator/HydratorRegistry`** — builds configured
+  `Laminas\Hydrator\ReflectionHydrator`s (Underscore naming + BackedEnum /
+  DateTimeImmutable / custom `CsvListStrategy` + `ValueObjectStrategy`).
+  `ReflectionHydrator` populates `readonly` / `private(set)` props on a
+  constructor-less prototype — the shape `PhpDb\ResultSet\HydratingResultSet`
+  needs.
+- **`Infrastructure/Persistence/PhpDb/`** — repository implementations, bound to
+  their interfaces in `PersistenceConfigProvider` (registered in
+  `config/config.php`). Entity CRUD via `PhpDb\TableGateway`; read models via
+  hand-built `PhpDb\Sql\Select` + `HydratingResultSet`. `save()` wraps
+  insert/update + `post_tag` sync in a transaction.
+- **`Infrastructure/Persistence/Migration/`** — `MigrationRunner` +
+  `Version*` classes built with `PhpDb\Sql\Ddl`. Run via `php bin/migrate.php
+  [migrate|rollback [n]|status]` or `make db-migrate` / `db-rollback` /
+  `db-status`. State tracked in `schema_migrations`.
+
+Never use the `@deprecated` `PhpDb\Adapter\Adapter::query()`; use
+`executeQuery()` / `prepareQuery()` / `prepareStatementForSqlObject()`.
+
 ### Configuration system
 
 `config/config.php` runs `ConfigAggregator` over, in order: framework
@@ -125,6 +170,10 @@ follow for real handlers.
 ## Tests
 
 PHPUnit 11, tests in `test/AppTest/` (PSR-4 `AppTest\`), mirroring `src/App/src/`.
-`phpunit.xml.dist` sets `failOnAllIssues="true"` — deprecations and warnings fail
-the suite. `AppTest\InMemoryContainer` is a minimal PSR-11 stub for testing
+Two suites: `composer test` (`unit`, no DB) and `composer test-integration`
+(`integration`, `test/AppTest/Integration/` — hits the `mariadb` container,
+runs migrations + `TRUNCATE` in `setUp`). `phpunit.xml.dist` sets
+`failOnAllIssues="true"` — deprecations and warnings fail the suite, so use
+PHPUnit attributes (`#[DataProvider]`), not `@` annotations.
+`AppTest\InMemoryContainer` is a minimal PSR-11 stub for testing
 factories without booting the real container.
