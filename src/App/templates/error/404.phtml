@@ -1,9 +1,12 @@
 <?php $this->headTitle('404 Not Found'); ?>
-
-<h1>Oops!</h1>
-<h2>This is awkward.</h2>
-<p>We encountered a 404 Not Found error.</p>
-<p>
-    You are looking for something that doesn't exist or may have moved. Check out one of the links on this page
-    or head back to <a href="<?=$this->url('home')?>">Home</a>.
-</p>
+<div class="rounded-lg border border-gray-200 bg-white p-10 text-center">
+    <p class="text-sm font-medium text-primary">404</p>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight">Page not found</h1>
+    <p class="mt-2 text-sm text-gray-500">
+        That post or category doesn&rsquo;t exist, or it may have moved.
+    </p>
+    <a
+        href="<?= $this->url('blog.list') ?>"
+        class="mt-6 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+    >Back to posts</a>
+</div>

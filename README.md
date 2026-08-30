@@ -2,7 +2,9 @@
 
 A small blog application built on [Mezzio](https://docs.mezzio.dev/mezzio/) (Laminas)
 — PSR-15 middleware, PHP 8.5, `php-db/phpdb` for persistence, `laminas-hydrator`
-mapping SQL rows to immutable entities and DTOs.
+mapping SQL rows to immutable entities and DTOs. The reader frontend is
+server-rendered `.phtml` (post list, single post, category browsing) styled with
+Tailwind (Play CDN) to the shadcn/ui look.
 
 The whole environment (Caddy TLS · nginx · php-fpm · MariaDB · Redis · MinIO ·
 Mailpit) runs in Docker. See [`docker/README.md`](docker/README.md) for the stack
@@ -112,7 +114,8 @@ Connection settings come from `DATABASE_URL` in `.env`
 
 ```
 src/App/src/
-  Handler/                     HTTP entry points (PSR-15 request handlers)
+  Handler/                     PSR-15 request handlers: Post{List,View},
+                               Category{List,Posts}, Pagination
   Domain/
     Entity/                    final readonly entities (clone-with mutations)
     ReadModel/                 flat hydrate-only DTOs for JOIN queries
@@ -122,6 +125,7 @@ src/App/src/
     PhpDb/                     repository implementations (TableGateway + Sql)
     Hydrator/                  HydratorRegistry (ReflectionHydrator + strategies)
     Migration/                 Sql\Ddl migrations + runner
+  templates/                   .phtml views (Tailwind Play CDN); layout + partials
 config/                        pipeline, routes, ConfigProviders, autoload/*.php
 test/AppTest/                  mirrors src/; Integration/ = DB-backed suite
 docker/                        Dockerfile, Caddyfile, nginx, compose helpers

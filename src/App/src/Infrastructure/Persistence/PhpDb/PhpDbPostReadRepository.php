@@ -129,7 +129,7 @@ final class PhpDbPostReadRepository implements PostReadRepositoryInterface
             ->join(
                 ['c' => 'categories'],
                 'p.category_id = c.id',
-                ['category_name' => 'name'],
+                ['category_name' => 'name', 'category_slug' => 'slug'],
                 Select::JOIN_LEFT,
             )
             ->join(['pt' => 'post_tag'], 'pt.post_id = p.id', [], Select::JOIN_LEFT)

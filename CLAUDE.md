@@ -9,10 +9,12 @@ scaffolded from `mezzio/mezzio-skeleton`. Runtime stack: laminas-servicemanager
 (DI), mezzio-fastroute (routing), mezzio-laminasviewrenderer (templates),
 laminas-diactoros (PSR-7). PHP 8.5.
 
-Beyond the skeleton defaults (`GET /` home page, `GET /api/ping`) the app has a
-blog model — User / Post / Category / Tag with a php-db persistence layer,
-`laminas-hydrator` mapping, and `Sql\Ddl` migrations (see below). No blog HTTP
-handlers or routes yet.
+The app has a blog model — User / Post / Category / Tag with a php-db persistence
+layer, `laminas-hydrator` mapping, and `Sql\Ddl` migrations (see below) — and a
+server-rendered reader frontend: `GET /` (paginated post list), `GET /posts/{slug}`,
+`GET /categories`, `GET /categories/{slug}`, plus `GET /api/ping`. The `.phtml`
+templates use Tailwind via the Play CDN (`cdn.tailwindcss.com`), styled to the
+shadcn/ui look (`bg-gray-50` page, white cards, `#2563eb` primary, Inter).
 
 ## Commands
 
@@ -103,15 +105,22 @@ dispatch invokes a `RequestHandlerInterface`.
 - **`config/routes.php`** — route table. Register with `$app->get/post/...($path,
   HandlerClass::class, 'route.name')`.
 - **`src/App/src/ConfigProvider.php`** — the module's DI + template wiring. Every
-  new handler must be registered here: stateless handlers under `invokables`,
-  handlers needing constructor dependencies under `factories` (mapped to a
-  `*Factory` class). Template namespace → path mappings live in `getTemplates()`.
+  new handler is registered here: stateless ones under `invokables`, ones with
+  constructor dependencies under `factories` — the blog handlers use
+  `Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory` so no
+  `*Factory` class is needed. Template namespace → path mappings live in
+  `getTemplates()`.
 - **Handlers** (`src/App/src/Handler/`) — one class per endpoint implementing
   `Psr\Http\Server\RequestHandlerInterface::handle()`, returning a Diactoros
-  `JsonResponse` / `HtmlResponse`. Factories receive the PSR-11 container and
-  pull collaborators from it (see `HomePageHandlerFactory`).
+  `HtmlResponse` / `JsonResponse`. `PostListHandler` / `PostViewHandler` /
+  `CategoryListHandler` / `CategoryPostsHandler` pull a read repository +
+  `TemplateRendererInterface`; the two listing handlers share `Handler\Pagination`
+  (fetch `perPage + 1`, `hasNext()` detects the next page). A matched route with
+  no data returns `HtmlResponse(render('error::404'), 404)` from the handler.
 - **Templates** (`src/App/templates/`) — `.phtml` for laminas-view, referenced as
-  `namespace::name` (e.g. `app::home-page`). `layout::default` wraps pages.
+  `namespace::name` (e.g. `app::post-list`, `app::partial/post-card`).
+  `layout::default` loads Tailwind (Play CDN) + Inter and wraps pages. Escape all
+  dynamic output (`$this->escapeHtml*`); phpcs/psalm do not lint `.phtml`.
 
 ### Blog model (`src/App/src/Domain` + `src/App/src/Infrastructure`)
 
@@ -166,10 +175,6 @@ gitignored and machine-specific.
 The merged config is cached to `data/cache/config-cache.php` in production. **Any
 change to config files or ConfigProviders requires `composer clear-config-cache`
 to take effect** (caching is off in development mode).
-
-`HomePageHandler` branches on the concrete container/router/template classes to
-render "what's installed" info — this is skeleton demo code, not a pattern to
-follow for real handlers.
 
 ## Tests
 

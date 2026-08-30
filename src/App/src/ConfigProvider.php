@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
+
 /**
  * The configuration provider for the App module
  *
@@ -35,7 +37,10 @@ class ConfigProvider
                 Handler\PingHandler::class => Handler\PingHandler::class,
             ],
             'factories'  => [
-                Handler\HomePageHandler::class => Handler\HomePageHandlerFactory::class,
+                Handler\PostListHandler::class     => ReflectionBasedAbstractFactory::class,
+                Handler\PostViewHandler::class     => ReflectionBasedAbstractFactory::class,
+                Handler\CategoryListHandler::class  => ReflectionBasedAbstractFactory::class,
+                Handler\CategoryPostsHandler::class => ReflectionBasedAbstractFactory::class,
             ],
         ];
     }

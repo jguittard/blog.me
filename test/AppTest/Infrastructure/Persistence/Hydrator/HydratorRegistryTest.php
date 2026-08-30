@@ -125,6 +125,7 @@ final class HydratorRegistryTest extends TestCase
             'published_at'  => '2026-02-01 09:00:00',
             'author_name'   => 'Jane Doe',
             'category_name' => 'PHP',
+            'category_slug' => 'php',
             'tags'          => 'php,8.5,hydrator',
         ];
 
@@ -132,6 +133,7 @@ final class HydratorRegistryTest extends TestCase
 
         self::assertInstanceOf(PostListItem::class, $item);
         self::assertSame(self::CUID, $item->id);
+        self::assertSame('php', $item->categorySlug);
         self::assertSame(['php', '8.5', 'hydrator'], $item->tags);
         self::assertSame(PostStatus::Published, $item->status);
         self::assertSame('/posts/hello-world', $item->href);

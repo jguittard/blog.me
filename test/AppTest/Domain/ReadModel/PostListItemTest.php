@@ -27,6 +27,7 @@ final class PostListItemTest extends TestCase
             publishedAt: $publishedAt,
             authorName: 'Jane Doe',
             categoryName: 'PHP',
+            categorySlug: 'php',
             tags: ['php', '8.5'],
         );
     }
