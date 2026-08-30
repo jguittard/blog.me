@@ -18,6 +18,10 @@ use Psr\Container\ContainerInterface;
  * Development seed: 3 authors, PPL curriculum categories/tags and 30 posts
  * about aircraft and PPL lessons. Idempotent — re-running skips what exists.
  *
+ * Local development only. It creates login-able accounts with a shared,
+ * well-known password and (with --fresh) truncates tables, so it refuses to
+ * run against anything that does not look like the local Docker database.
+ *
  *   php bin/seed.php            (or: make seed)
  *   php bin/seed.php --fresh    wipe the blog tables first (or: make seed-fresh)
  */
@@ -29,13 +33,20 @@ require 'vendor/autoload.php';
 /** @var ContainerInterface $container */
 $container = require 'config/container.php';
 
+$db   = $container->get(PhpDb\Adapter\AdapterInterface::class);
+$host = (string) ($db->getDriver()->getConnection()->getConnectionParameters()['host'] ?? '');
+
+if (! in_array($host, ['mariadb', 'localhost', '127.0.0.1', '::1'], true)) {
+    fwrite(STDERR, "Refusing to seed: database host '{$host}' is not a recognised local/Docker host.\n");
+    exit(1);
+}
+
 $users      = $container->get(UserRepositoryInterface::class);
 $categories = $container->get(CategoryRepositoryInterface::class);
 $tags       = $container->get(TagRepositoryInterface::class);
 $posts      = $container->get(PostRepositoryInterface::class);
 
 if (in_array('--fresh', $argv, true)) {
-    $db = $container->get(PhpDb\Adapter\AdapterInterface::class);
     $db->executeQuery('SET FOREIGN_KEY_CHECKS = 0');
     foreach (['post_tag', 'posts', 'tags', 'categories', 'users'] as $table) {
         $db->executeQuery("TRUNCATE TABLE `{$table}`");
@@ -48,7 +59,8 @@ if (in_array('--fresh', $argv, true)) {
 // Authors (roles TBD)
 // ---------------------------------------------------------------------------
 
-$passwordHash = password_hash('password', PASSWORD_BCRYPT);
+// Dev-only shared password for the sample accounts; override with SEED_PASSWORD.
+$passwordHash = password_hash(getenv('SEED_PASSWORD') ?: 'password', PASSWORD_BCRYPT);
 
 $authorDefs = [
     ['Julien', 'julien@guittard.me'],
