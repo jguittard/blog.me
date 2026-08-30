@@ -64,6 +64,7 @@ Then open **<https://blog.me:8443>**.
 | `make db-rollback` | revert the last migration (`make db-rollback n=3` for more) |
 | `make db-status` | list migrations and whether they are applied |
 | `make seed` | load sample blog data (idempotent); `make seed-fresh` wipes first |
+| `make covers` | generate post cover SVGs and upload them to MinIO |
 | `make destroy` | stop the stack and drop the Redis/Caddy volumes |
 | `make certs` | (re)generate the local TLS certificate |
 | `make hosts` | print the `/etc/hosts` line you need |
@@ -105,6 +106,11 @@ Add a migration by creating `Version<UTC timestamp><Name>.php` extending
 categories/tags and 30 posts about aircraft and flight training. It is
 idempotent — re-running skips anything that already exists. `make seed-fresh`
 truncates the blog tables first.
+
+`make covers` generates a deterministic cover SVG per post (`bin/covers.php`) and
+uploads them to the MinIO `uploads` bucket; ~3 in 4 posts get one. The seed
+stores the object URL from `S3_PUBLIC_ENDPOINT`, so run `make covers` alongside
+`make seed` and keep `S3_PUBLIC_ENDPOINT` in step with `HTTPS_PORT`.
 
 Connection settings come from `DATABASE_URL` in `.env`
 (`config/autoload/database.global.php`); MariaDB and MinIO data persist to

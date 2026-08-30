@@ -156,9 +156,15 @@ Domain / Infrastructure split inside the `App` module:
   UPDATE — no auto-increment to read back); `PhpDbPostRepository::save()` wraps
   it plus `post_tag` sync in a transaction.
 - **`Infrastructure/Persistence/Migration/`** — `MigrationRunner` +
-  `Version*` classes built with `PhpDb\Sql\Ddl`. Run via `php bin/migrate.php
-  [migrate|rollback [n]|status]` or `make db-migrate` / `db-rollback` /
-  `db-status`. State tracked in `schema_migrations`.
+  `Version*` classes built with `PhpDb\Sql\Ddl` (`CreateTable`, and `AlterTable`
+  for additive changes). Run via `php bin/migrate.php [migrate|rollback [n]|status]`
+  or `make db-migrate` / `db-rollback` / `db-status`. Append every new class to
+  `MigrationRunnerFactory::MIGRATIONS`; state tracked in `schema_migrations`.
+- **Post covers** — `Post` has nullable `imageUrl` / `imageAlt` (`withImage()`).
+  `make covers` generates a deterministic SVG per post (`bin/covers.php`) and
+  `mc`-uploads them to the MinIO `uploads` bucket; the seed stores the public URL
+  built from `S3_PUBLIC_ENDPOINT` for ~3 of every 4 posts. `bin/posts.php` holds
+  the shared post fixtures (`require`d by `bin/seed.php` and `bin/covers.php`).
 
 Never use the `@deprecated` `PhpDb\Adapter\Adapter::query()`; use
 `executeQuery()` / `prepareQuery()` / `prepareStatementForSqlObject()`.

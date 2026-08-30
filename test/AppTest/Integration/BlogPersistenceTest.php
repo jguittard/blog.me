@@ -116,7 +116,9 @@ final class BlogPersistenceTest extends TestCase
             str_repeat('word ', 450),
             $category->id,
             'A short look at hooks.',
-        )->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
+        )
+            ->withImage('https://s3.example/covers/property-hooks.svg', 'Property Hooks — cover')
+            ->publish(new DateTimeImmutable('2026-02-01 09:00:00'));
 
         $post = $posts->save($post, $tagIds);
         self::assertMatchesRegularExpression('/^[a-z0-9]{24}$/', $post->id);
@@ -125,6 +127,7 @@ final class BlogPersistenceTest extends TestCase
         self::assertNotNull($reloaded);
         self::assertSame(PostStatus::Published, $reloaded->status);
         self::assertTrue($reloaded->isPublished());
+        self::assertSame('https://s3.example/covers/property-hooks.svg', $reloaded->imageUrl);
 
         // read side: single JOIN query, relations inlined
         $list = $read->listPublished();
@@ -135,10 +138,13 @@ final class BlogPersistenceTest extends TestCase
         self::assertSame(['8.5', 'hydrator', 'php'], $list[0]->tags);
         self::assertSame('/posts/property-hooks-in-php-8-5', $list[0]->href);
 
+        self::assertSame('https://s3.example/covers/property-hooks.svg', $list[0]->imageUrl);
+
         $view = $read->viewBySlug('property-hooks-in-php-8-5');
         self::assertNotNull($view);
         self::assertSame('jane@example.com', $view->authorEmail);
         self::assertSame('php-internals', $view->categorySlug);
+        self::assertSame('https://s3.example/covers/property-hooks.svg', $view->imageUrl);
         self::assertSame(3, $view->readingTimeMinutes);
         self::assertTrue($view->isPublished);
 

@@ -86,17 +86,19 @@ final class BlogFrontendTest extends TestCase
         self::assertStringContainsString('First Lesson', $html);
         self::assertStringContainsString('Second Lesson', $html);
         self::assertStringContainsString('Flight Operations', $html); // category chip
+        self::assertStringContainsString('first-lesson.svg', $html); // imaged card thumbnail
     }
 
     public function testSinglePostRenders(): void
     {
-        $response = $this->get('/posts/first-lesson');
-        $html     = (string) $response->getBody();
+        $withImage = (string) $this->get('/posts/first-lesson')->getBody();
+        self::assertStringContainsString('<h1', $withImage);
+        self::assertStringContainsString('First Lesson', $withImage);
+        self::assertStringContainsString('min read', $withImage);
+        self::assertStringContainsString('first-lesson.svg', $withImage); // hero
 
-        self::assertSame(200, $response->getStatusCode());
-        self::assertStringContainsString('<h1', $html);
-        self::assertStringContainsString('First Lesson', $html);
-        self::assertStringContainsString('min read', $html);
+        $imageless = (string) $this->get('/posts/second-lesson')->getBody();
+        self::assertStringNotContainsString('<img', $imageless);
     }
 
     public function testUnknownPostIs404(): void
@@ -136,10 +138,12 @@ final class BlogFrontendTest extends TestCase
         $category = $categories->save(Category::create('Flight Operations', 'Checklists and circuits.'));
 
         foreach (['First Lesson', 'Second Lesson', 'Third Lesson'] as $i => $title) {
-            $posts->save(
-                Post::draft($author->id, $title, 'Body of ' . $title . ".\n\nMore detail here.", $category->id)
-                    ->publish(new DateTimeImmutable('2026-0' . ($i + 1) . '-01 09:00:00')),
-            );
+            $post = Post::draft($author->id, $title, 'Body of ' . $title . ".\n\nMore detail here.", $category->id);
+            if ($title === 'First Lesson') {
+                $post = $post->withImage('https://s3.example/first-lesson.svg', 'First Lesson — cover');
+            }
+
+            $posts->save($post->publish(new DateTimeImmutable('2026-0' . ($i + 1) . '-01 09:00:00')));
         }
     }
 

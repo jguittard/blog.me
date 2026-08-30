@@ -33,6 +33,8 @@ final class PostListHandlerTest extends TestCase
             authorName: 'Julien',
             categoryName: 'Navigation',
             categorySlug: 'navigation',
+            imageUrl: null,
+            imageAlt: null,
             tags: ['nav'],
         );
     }

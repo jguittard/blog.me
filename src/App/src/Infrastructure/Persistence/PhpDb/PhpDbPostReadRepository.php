@@ -74,6 +74,8 @@ final class PhpDbPostReadRepository implements PostReadRepositoryInterface
                 'status',
                 'published_at',
                 'updated_at',
+                'image_url',
+                'image_alt',
                 'tags' => new Expression(self::TAGS_EXPR),
             ])
             ->join(
@@ -117,6 +119,8 @@ final class PhpDbPostReadRepository implements PostReadRepositoryInterface
                 'excerpt',
                 'status',
                 'published_at',
+                'image_url',
+                'image_alt',
                 'body_preview' => new Expression(self::PREVIEW_EXPR),
                 'tags'         => new Expression(self::TAGS_EXPR),
             ])

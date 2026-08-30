@@ -17,6 +17,14 @@ $paragraphs = preg_split('/\n\s*\n/', trim($post->body)) ?: [$post->body];
         <?php endif; ?>
     </nav>
 
+    <?php if ($post->imageUrl !== null): ?>
+        <img
+            src="<?= $this->escapeHtmlAttr($post->imageUrl) ?>"
+            alt="<?= $this->escapeHtmlAttr($post->imageAlt ?? $post->title) ?>"
+            class="aspect-[1200/630] w-full rounded-lg border border-gray-200 bg-gray-50 object-cover"
+        />
+    <?php endif; ?>
+
     <header class="space-y-3">
         <h1 class="text-3xl font-bold leading-tight tracking-tight"><?= $this->escapeHtml($post->title) ?></h1>
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">

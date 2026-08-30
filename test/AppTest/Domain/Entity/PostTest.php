@@ -46,6 +46,21 @@ final class PostTest extends TestCase
         self::assertSame($draft->id, $draft->rename('Something Else')->id);
     }
 
+    public function testWithImageIsImmutable(): void
+    {
+        $draft = $this->draft();
+
+        $withImage = $draft->withImage('https://cdn.example/cover.svg', 'Cover');
+
+        self::assertNull($draft->imageUrl);
+        self::assertNotSame($draft, $withImage);
+        self::assertSame('https://cdn.example/cover.svg', $withImage->imageUrl);
+        self::assertSame('Cover', $withImage->imageAlt);
+        self::assertSame($draft->id, $withImage->id);
+
+        self::assertNull($withImage->withImage(null)->imageUrl);
+    }
+
     public function testPublishReturnsNewInstanceAndLeavesOriginalUntouched(): void
     {
         $draft = $this->draft();

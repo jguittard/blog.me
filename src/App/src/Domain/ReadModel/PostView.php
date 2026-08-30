@@ -35,6 +35,8 @@ final class PostView
         public private(set) string $authorEmail,
         public private(set) ?string $categoryName,
         public private(set) ?string $categorySlug,
+        public private(set) ?string $imageUrl,
+        public private(set) ?string $imageAlt,
         /** @var list<string> */
         public private(set) array $tags,
     ) {

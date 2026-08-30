@@ -40,6 +40,8 @@ final class PostViewHandlerTest extends TestCase
             authorEmail: 'julien@guittard.me',
             categoryName: 'Navigation',
             categorySlug: 'navigation',
+            imageUrl: null,
+            imageAlt: null,
             tags: ['nav'],
         );
 
