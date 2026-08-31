@@ -12,9 +12,11 @@
         <testsuite name="unit">
             <directory>./test</directory>
             <exclude>./test/AppTest/Integration</exclude>
+            <exclude>./test/AdminTest/Integration</exclude>
         </testsuite>
         <testsuite name="integration">
             <directory>./test/AppTest/Integration</directory>
+            <directory>./test/AdminTest/Integration</directory>
         </testsuite>
     </testsuites>
 

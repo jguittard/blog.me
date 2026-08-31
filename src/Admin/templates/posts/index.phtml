@@ -1,0 +1,72 @@
+<?php
+/** @var \App\Domain\Entity\Post[] $posts */
+/** @var array<string, string> $categoryNames */
+$this->headTitle('Posts');
+
+$badge = [
+    'published' => 'bg-primary/10 text-primary',
+    'draft'     => 'bg-gray-100 text-gray-600',
+    'archived'  => 'bg-amber-100 text-amber-700',
+];
+?>
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold tracking-tight">Posts</h1>
+        <a
+            href="<?= $this->url('admin.posts.create') ?>"
+            class="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >+ New post</a>
+    </div>
+
+    <?php if ($posts === []): ?>
+        <p class="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+            No posts yet.
+        </p>
+    <?php else: ?>
+        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <table class="w-full text-sm">
+                <thead class="border-b border-gray-200 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr>
+                        <th class="px-4 py-3 font-medium">Title</th>
+                        <th class="px-4 py-3 font-medium">Status</th>
+                        <th class="px-4 py-3 font-medium">Category</th>
+                        <th class="px-4 py-3 font-medium">Updated</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <?php foreach ($posts as $post): ?>
+                        <tr>
+                            <td class="px-4 py-3">
+                                <a
+                                    href="<?= $this->url('admin.posts.edit', ['id' => $post->id]) ?>"
+                                    class="font-medium text-gray-900 hover:text-primary"
+                                ><?= $this->escapeHtml($post->title) ?></a>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="rounded px-1.5 py-0.5 text-xs font-medium <?= $badge[$post->status->value] ?? 'bg-gray-100' ?>">
+                                    <?= $this->escapeHtml($post->status->label()) ?>
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-600">
+                                <?= $post->categoryId !== null
+                                    ? $this->escapeHtml($categoryNames[$post->categoryId] ?? '—')
+                                    : '—' ?>
+                            </td>
+                            <td class="px-4 py-3 text-gray-500"><?= $post->updatedAt->format('M j, Y') ?></td>
+                            <td class="px-4 py-3 text-right">
+                                <form
+                                    method="post"
+                                    action="<?= $this->url('admin.posts.delete', ['id' => $post->id]) ?>"
+                                    onsubmit="return confirm('Delete this post?')"
+                                >
+                                    <button type="submit" class="text-xs font-medium text-red-600 hover:underline">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</div>

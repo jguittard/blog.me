@@ -54,6 +54,24 @@ final class PhpDbTagRepository implements TagRepositoryInterface
         return $row instanceof Tag ? $row : null;
     }
 
+    /** @return list<Tag> */
+    public function all(): array
+    {
+        $resultSet = $this->table->select(static function (Select $select): void {
+            $select->order('name ASC');
+        });
+
+        $tags = [];
+        /** @var mixed $row */
+        foreach ($resultSet as $row) {
+            if ($row instanceof Tag) {
+                $tags[] = $row;
+            }
+        }
+
+        return $tags;
+    }
+
     /**
      * @param  list<string> $names
      * @return list<Tag>
